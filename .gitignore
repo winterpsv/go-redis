@@ -1,0 +1,12 @@
+# MongoData volume
+mongodata/
+
+#  Air
+go-app/tmp/
+
+### Intellij ###
+.DS_Store
+.idea
+.env
+*.out
+*.log

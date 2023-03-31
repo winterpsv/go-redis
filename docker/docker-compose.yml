@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+    # The Go App
+    task3_4:
+        build: ./
+        command: ./task3_4
+        container_name: go_app
+        ports:
+            - '8080:8080'
+        depends_on:
+            - mongo
+            - redis
+
+    # MongoDB
+    mongo:
+        build: ./mongo
+        container_name: mongo
+        ports:
+            - '27017:27017'
+        volumes:
+            - ./mongodata:/data/db
+        restart: always
+
+    # Mongo Express Web-based MongoDB admin interface
+    mongo_express:
+        image: 'mongo-express:0.54.0'
+        container_name: mongo_express
+        depends_on:
+            - 'mongo'
+        ports:
+            - '8081:8081'
+        restart: always
+
+    # Redis
+    redis:
+        build: ./redis
+        volumes:
+            - ./redis:/data
+        ports:
+            - "6379:6379"
+
+    # Redis WEB UI
+    redis-webui:
+        build:
+            context: ./redis-webui
+        ports:
+            - "9987:80"
+        depends_on:
+            - redis
