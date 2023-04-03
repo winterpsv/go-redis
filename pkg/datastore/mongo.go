@@ -5,11 +5,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	"task3_3_new/user-management/internal/infrastructure/config"
+	"task3_4/user-management/internal/infrastructure/config"
 	"time"
 )
 
-func NewDB(cfg *config.Config) *mongo.Database {
+func NewMongoDB(cfg *config.Config) *mongo.Database {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 

@@ -4,9 +4,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	controller "task3_3_new/user-management/internal/controller/http/v1"
-	registry "task3_3_new/user-management/internal/infrastructure/registry/app"
-	"task3_3_new/user-management/pkg/echovalidator"
+	controller "task3_4/user-management/internal/controller/http/v1"
+	registry "task3_4/user-management/internal/infrastructure/registry/app"
+	"task3_4/user-management/pkg/echovalidator"
 )
 
 type Router struct {

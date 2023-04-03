@@ -2,7 +2,7 @@ package interactor
 
 import (
 	"github.com/golang-jwt/jwt/v5"
-	"task3_3_new/user-management/internal/controller/http/dto"
+	"task3_4/user-management/internal/controller/http/dto"
 )
 
 type UserInteractorInterface interface {

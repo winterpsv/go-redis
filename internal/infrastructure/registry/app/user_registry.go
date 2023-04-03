@@ -1,11 +1,12 @@
 package appRegistry
 
 import (
-	ir "task3_3_new/user-management/internal/adapter/db/mongodb"
-	au "task3_3_new/user-management/internal/application/service"
-	"task3_3_new/user-management/internal/application/usecase"
-	ip "task3_3_new/user-management/internal/controller/http/presenter"
-	v1 "task3_3_new/user-management/internal/controller/http/v1"
+	ir "task3_4/user-management/internal/adapter/db/mongodb"
+	re "task3_4/user-management/internal/adapter/db/redis"
+	au "task3_4/user-management/internal/application/service"
+	interactor "task3_4/user-management/internal/application/usecase"
+	ip "task3_4/user-management/internal/controller/http/presenter"
+	v1 "task3_4/user-management/internal/controller/http/v1"
 )
 
 func (r *registry) NewUserController() *v1.UserController {
@@ -26,6 +27,10 @@ func (r *registry) NewAuthInteractor() *interactor.AuthInteractor {
 
 func (r *registry) NewUserRepository() *ir.UserRepository {
 	return ir.NewUserRepository(r.db, r.cfg.MongoCollection)
+}
+
+func (r *registry) NewRedisRepository() *re.RedisRepository {
+	return re.NewRedisRepository(r.redis)
 }
 
 func (r *registry) NewUserPresenter() *ip.UserPresenter {

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
-	repository "task3_3_new/user-management/internal/adapter/db/mongodb"
-	"task3_3_new/user-management/internal/application/service"
-	"task3_3_new/user-management/internal/controller/http/dto"
-	"task3_3_new/user-management/internal/controller/http/presenter"
-	model "task3_3_new/user-management/internal/entity"
-	"task3_3_new/user-management/pkg/apperror"
+	repository "task3_4/user-management/internal/adapter/db/mongodb"
+	"task3_4/user-management/internal/application/service"
+	"task3_4/user-management/internal/controller/http/dto"
+	"task3_4/user-management/internal/controller/http/presenter"
+	model "task3_4/user-management/internal/entity"
+	"task3_4/user-management/pkg/apperror"
 	"time"
 )
 

@@ -11,6 +11,9 @@ type Config struct {
 	MongoCollection string `env:"MONGO_COLLECTION"`
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	JwtSecret       string `env:"JWT_SECRET"`
+	RedisAddr       string `env:"REDIS_ADDR"`
+	RedisPass       string `env:"REDIS_PASS"`
+	RedisDB         int    `env:"REDIS_DB"`
 }
 
 func ReadConfig() (config *Config, err error) {

@@ -4,9 +4,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo"
 	"net/http"
-	interactor "task3_3_new/user-management/internal/application/usecase"
-	"task3_3_new/user-management/internal/controller/http/dto"
-	"task3_3_new/user-management/pkg/apperror"
+	interactor "task3_4/user-management/internal/application/usecase"
+	"task3_4/user-management/internal/controller/http/dto"
+	"task3_4/user-management/pkg/apperror"
 )
 
 type AuthController struct {

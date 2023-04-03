@@ -1,8 +1,8 @@
 package presenter
 
 import (
-	"task3_3_new/user-management/internal/controller/http/dto"
-	model "task3_3_new/user-management/internal/entity"
+	"task3_4/user-management/internal/controller/http/dto"
+	model "task3_4/user-management/internal/entity"
 )
 
 type UserPresenter struct {

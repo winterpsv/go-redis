@@ -2,8 +2,8 @@ package presenter
 
 import (
 	"github.com/stretchr/testify/mock"
-	"task3_3_new/user-management/internal/controller/http/dto"
-	model "task3_3_new/user-management/internal/entity"
+	"task3_4/user-management/internal/controller/http/dto"
+	model "task3_4/user-management/internal/entity"
 )
 
 type MockUserPresenter struct {

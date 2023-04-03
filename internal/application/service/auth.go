@@ -8,9 +8,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strings"
-	repository "task3_3_new/user-management/internal/adapter/db/mongodb"
-	"task3_3_new/user-management/internal/infrastructure/config"
-	"task3_3_new/user-management/pkg/apperror"
+	repository "task3_4/user-management/internal/adapter/db/mongodb"
+	"task3_4/user-management/internal/infrastructure/config"
+	"task3_4/user-management/pkg/apperror"
 	"time"
 )
 

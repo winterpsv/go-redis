@@ -5,8 +5,8 @@ import (
 	"github.com/labstack/echo"
 	"net/http"
 	"strconv"
-	interactor "task3_3_new/user-management/internal/application/usecase"
-	"task3_3_new/user-management/internal/controller/http/dto"
+	interactor "task3_4/user-management/internal/application/usecase"
+	"task3_4/user-management/internal/controller/http/dto"
 )
 
 type UserController struct {

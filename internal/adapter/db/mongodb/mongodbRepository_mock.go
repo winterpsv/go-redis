@@ -3,7 +3,7 @@ package mongodbRepository
 import (
 	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	model "task3_3_new/user-management/internal/entity"
+	model "task3_4/user-management/internal/entity"
 )
 
 type MockUserRepository struct {

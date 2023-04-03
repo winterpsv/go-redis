@@ -2,7 +2,7 @@ package mongodbRepository
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	model "task3_3_new/user-management/internal/entity"
+	model "task3_4/user-management/internal/entity"
 )
 
 type UserRepositoryInterface interface {

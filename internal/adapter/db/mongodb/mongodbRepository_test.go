@@ -5,7 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
-	model "task3_3_new/user-management/internal/entity"
+	model "task3_4/user-management/internal/entity"
 	"testing"
 )
 

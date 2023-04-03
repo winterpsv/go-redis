@@ -12,20 +12,20 @@ test:
 	go test ./internal/application/service/...
 	go test ./internal/application/usecase/...
 
+buildimage:
+	docker build -t task3_4_image .
+
 clean:
 	go clean
 	rm build/${BINARY_NAME}
 
 start:
-	docker-compose up
+	docker-compose  up
 
 restart:
 	docker-compose down
-	sudo rm -rf mongodata/
-	docker-compose build
+	docker build -t task3_4_image .
+	docker-compose up
 
 stop:
 	docker-compose down
-
-cleandata:
-	sudo rm -rf mongodata/

@@ -3,9 +3,9 @@ package service
 import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	repository "task3_3_new/user-management/internal/adapter/db/mongodb"
-	model "task3_3_new/user-management/internal/entity"
-	"task3_3_new/user-management/internal/infrastructure/config"
+	repository "task3_4/user-management/internal/adapter/db/mongodb"
+	model "task3_4/user-management/internal/entity"
+	"task3_4/user-management/internal/infrastructure/config"
 	"testing"
 )
 

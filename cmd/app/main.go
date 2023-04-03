@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/labstack/echo"
 	"log"
-	"task3_3_new/user-management/internal/controller/http/handler"
-	"task3_3_new/user-management/internal/infrastructure/config"
-	registry "task3_3_new/user-management/internal/infrastructure/registry/app"
-	"task3_3_new/user-management/pkg/datastore"
+	"task3_4/user-management/internal/controller/http/handler"
+	"task3_4/user-management/internal/infrastructure/config"
+	registry "task3_4/user-management/internal/infrastructure/registry/app"
+	"task3_4/user-management/pkg/datastore"
 )
 
 func main() {
@@ -16,9 +16,10 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	db := datastore.NewDB(cfg)
+	redis := datastore.NewRedisDB(cfg)
+	db := datastore.NewMongoDB(cfg)
 
-	r := registry.NewRegistry(db, cfg)
+	r := registry.NewRegistry(db, redis, cfg)
 
 	route := handler.NewRoute(echo.New(), r.NewAppControllers())
 	route.InitRoutes()

@@ -10,3 +10,4 @@ go-app/tmp/
 .env
 *.out
 *.log
+*.rdb
