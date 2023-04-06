@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	interactor "task3_4/user-management/internal/application/usecase"
 	"task3_4/user-management/internal/controller/http/dto"
@@ -20,11 +20,11 @@ func NewAuthController(us interactor.AuthInteractorInterface) *AuthController {
 func (ac *AuthController) CreateUser(c echo.Context) error {
 	d := new(dto.CreateUserDTO)
 	if err := c.Bind(d); err != nil {
-		return apperror.NewAppError(http.StatusBadRequest, "Failed to decode data", err)
+		return apperror.ErrDecodeData
 	}
 
 	if err := c.Validate(d); err != nil {
-		return apperror.NewAppError(http.StatusUnprocessableEntity, "Validation failed", err)
+		return apperror.ErrValidation
 	}
 
 	u, err := ac.authInteractor.Create(d)
@@ -34,7 +34,7 @@ func (ac *AuthController) CreateUser(c echo.Context) error {
 
 	err = c.JSON(http.StatusOK, u)
 	if err != nil {
-		return apperror.NewAppError(http.StatusCreated, "User created successfully", err)
+		return apperror.SuccessCreatedUser
 	}
 
 	return nil
@@ -43,11 +43,11 @@ func (ac *AuthController) CreateUser(c echo.Context) error {
 func (ac *AuthController) CreateToken(c echo.Context) error {
 	d := new(dto.CreateTokenDTO)
 	if err := c.Bind(d); err != nil {
-		return apperror.NewAppError(http.StatusBadRequest, "Decode data failed", err)
+		return apperror.ErrDecodeData
 	}
 
 	if err := c.Validate(d); err != nil {
-		return apperror.NewAppError(http.StatusUnprocessableEntity, "Validation failed", err)
+		return apperror.ErrValidation
 	}
 
 	token, err := ac.authInteractor.CreateToken(d)
@@ -59,7 +59,7 @@ func (ac *AuthController) CreateToken(c echo.Context) error {
 		"token": token,
 	})
 	if err != nil {
-		return apperror.NewAppError(http.StatusCreated, "JWT token created successfully", err)
+		return apperror.SuccessCreatedToken
 	}
 
 	return nil
@@ -93,11 +93,11 @@ func (ac *AuthController) UpdateUserPassword(c echo.Context) error {
 	d := new(dto.UpdateUserPasswordDTO)
 	ID := c.Param("id")
 	if err := c.Bind(d); err != nil {
-		return apperror.NewAppError(http.StatusBadRequest, "Failed to decode data", err)
+		return apperror.ErrDecodeData
 	}
 
 	if err := c.Validate(d); err != nil {
-		return apperror.NewAppError(http.StatusUnprocessableEntity, "Validation failed", err)
+		return apperror.ErrValidation
 	}
 
 	u, err := ac.authInteractor.UpdatePassword(d, ID)
@@ -107,7 +107,7 @@ func (ac *AuthController) UpdateUserPassword(c echo.Context) error {
 
 	err = c.JSON(http.StatusOK, u)
 	if err != nil {
-		return apperror.NewAppError(http.StatusOK, "User updated successfully", err)
+		return apperror.SuccessUpdatedUser
 	}
 
 	return nil

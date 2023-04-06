@@ -1,7 +1,7 @@
 package appRegistry
 
 import (
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	controller "task3_4/user-management/internal/controller/http/v1"
 	"task3_4/user-management/internal/infrastructure/config"

@@ -1,6 +1,7 @@
 package interactor
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	repository "task3_4/user-management/internal/adapter/db/mongodb"
@@ -12,18 +13,31 @@ import (
 )
 
 type UserInteractor struct {
-	UserRepository repository.UserRepositoryInterface
-	UserPresenter  presenter.UserPresenterInterface
-	Auth           service.AuthInterface
+	UserMongoRepository repository.UserRepositoryInterface
+	UserPresenter       presenter.UserPresenterInterface
+	Auth                service.AuthInterface
+	Cache               service.CacheInterface
 }
 
-func NewUserInteractor(r repository.UserRepositoryInterface, p presenter.UserPresenterInterface, a service.AuthInterface) *UserInteractor {
-	return &UserInteractor{r, p, a}
+func NewUserInteractor(r repository.UserRepositoryInterface, p presenter.UserPresenterInterface, a service.AuthInterface, c service.CacheInterface) *UserInteractor {
+	return &UserInteractor{r, p, a, c}
 }
 
-func (us *UserInteractor) GetAll(page, pageSize int64) ([]*dto.UserDTO, error) {
+func (us *UserInteractor) GetAll(page, pageSize int64, key string) ([]*dto.UserDTO, error) {
 	var u []*model.User
-	u, err := us.UserRepository.FindAll(page, pageSize, u)
+	expiration := 1 * time.Minute
+
+	u, err := us.UserMongoRepository.FindAll(page, pageSize, u)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(u)
+	if err != nil {
+		return nil, err
+	}
+
+	err = us.Cache.AddToCache(key, data, expiration)
 	if err != nil {
 		return nil, err
 	}
@@ -31,8 +45,20 @@ func (us *UserInteractor) GetAll(page, pageSize int64) ([]*dto.UserDTO, error) {
 	return us.UserPresenter.ResponseUsers(u), nil
 }
 
-func (us *UserInteractor) Get(id string) (*dto.UserDTO, error) {
-	u, err := us.UserRepository.FindByID(id)
+func (us *UserInteractor) Get(id, key string) (*dto.UserDTO, error) {
+	expiration := 1 * time.Minute
+
+	u, err := us.UserMongoRepository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(u)
+	if err != nil {
+		return nil, err
+	}
+
+	err = us.Cache.AddToCache(key, data, expiration)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +69,7 @@ func (us *UserInteractor) Get(id string) (*dto.UserDTO, error) {
 func (us *UserInteractor) UpdateVote(userForm *dto.VoteUserDTO, ID string, token *jwt.Token) (*dto.UserDTO, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	userId := claims["user_id"].(string)
-	u, err := us.UserRepository.FindByID(ID)
+	u, err := us.UserMongoRepository.FindByID(ID)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +78,7 @@ func (us *UserInteractor) UpdateVote(userForm *dto.VoteUserDTO, ID string, token
 		return nil, fmt.Errorf("can't vote for yourself")
 	}
 
-	if u.Active == false {
+	if !u.Active {
 		return nil, fmt.Errorf("user %s is deleted", u.Nickname)
 	}
 
@@ -62,12 +88,12 @@ func (us *UserInteractor) UpdateVote(userForm *dto.VoteUserDTO, ID string, token
 		}
 	}
 
-	lastUser, _ := us.UserRepository.FindLasHourtUserVoteByVoteID(userId)
+	lastUser, _ := us.UserMongoRepository.FindLasHourtUserVoteByVoteID(userId)
 	if lastUser != nil {
 		return nil, fmt.Errorf("can only vote once per hour")
 	}
 
-	VoterID, err := us.UserRepository.ConvertObjectIDFromHex(userId)
+	VoterID, err := us.UserMongoRepository.ConvertObjectIDFromHex(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +106,7 @@ func (us *UserInteractor) UpdateVote(userForm *dto.VoteUserDTO, ID string, token
 
 	u.Votes = append(u.Votes, newVote)
 
-	u, err = us.UserRepository.Update(u)
+	u, err = us.UserMongoRepository.Update(u)
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +115,12 @@ func (us *UserInteractor) UpdateVote(userForm *dto.VoteUserDTO, ID string, token
 }
 
 func (us *UserInteractor) Update(userForm *dto.UpdateUserDTO, ID string) (*dto.UserDTO, error) {
-	u, err := us.UserRepository.FindByID(ID)
+	u, err := us.UserMongoRepository.FindByID(ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if u.Active == false {
+	if !u.Active {
 		return nil, fmt.Errorf("user %s is deleted", u.Nickname)
 	}
 
@@ -103,7 +129,7 @@ func (us *UserInteractor) Update(userForm *dto.UpdateUserDTO, ID string) (*dto.U
 	u.Role = userForm.Role
 	u.UpdatedAt = time.Now().Unix()
 
-	u, err = us.UserRepository.Update(u)
+	u, err = us.UserMongoRepository.Update(u)
 	if err != nil {
 		return nil, err
 	}
@@ -112,19 +138,19 @@ func (us *UserInteractor) Update(userForm *dto.UpdateUserDTO, ID string) (*dto.U
 }
 
 func (us *UserInteractor) Deactivate(ID string) (*dto.UserDTO, error) {
-	u, err := us.UserRepository.FindByID(ID)
+	u, err := us.UserMongoRepository.FindByID(ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if u.Active == false {
+	if !u.Active {
 		return nil, fmt.Errorf("user %s is deleted", u.Nickname)
 	}
 
 	u.DeletedAt = time.Now().Unix()
 	u.Active = false
 
-	u, err = us.UserRepository.Update(u)
+	u, err = us.UserMongoRepository.Update(u)
 	if err != nil {
 		return nil, err
 	}
@@ -132,14 +158,33 @@ func (us *UserInteractor) Deactivate(ID string) (*dto.UserDTO, error) {
 	return us.UserPresenter.ResponseUser(u), nil
 }
 
-func (us *UserInteractor) GetUserByToken(token *jwt.Token) (*dto.UserDTO, error) {
+func (us *UserInteractor) GetUserByToken(token *jwt.Token, key string) (*dto.UserDTO, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	userId := claims["user_id"].(string)
+	expiration := 1 * time.Minute
 
-	u, err := us.UserRepository.FindByID(userId)
+	u, err := us.UserMongoRepository.FindByID(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(u)
+	if err != nil {
+		return nil, err
+	}
+
+	err = us.Cache.AddToCache(key, data, expiration)
 	if err != nil {
 		return nil, err
 	}
 
 	return us.UserPresenter.ResponseUser(u), nil
+}
+
+func (us *UserInteractor) CacheGet(key string) ([]byte, error) {
+	data, err := us.Cache.GetFromCache(key)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

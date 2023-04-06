@@ -1,7 +1,7 @@
 package datastore
 
 import (
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 	"task3_4/user-management/internal/infrastructure/config"
 )
 

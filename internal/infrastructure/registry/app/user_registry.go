@@ -18,14 +18,14 @@ func (r *registry) NewAuthController() *v1.AuthController {
 }
 
 func (r *registry) NewUserInteractor() *interactor.UserInteractor {
-	return interactor.NewUserInteractor(r.NewUserRepository(), r.NewUserPresenter(), r.NewAuth())
+	return interactor.NewUserInteractor(r.NewUserMongoRepository(), r.NewUserPresenter(), r.NewAuth(), r.NewCache())
 }
 
 func (r *registry) NewAuthInteractor() *interactor.AuthInteractor {
-	return interactor.NewAuthInteractor(r.NewUserRepository(), r.NewUserPresenter(), r.NewAuth())
+	return interactor.NewAuthInteractor(r.NewUserMongoRepository(), r.NewUserPresenter(), r.NewAuth())
 }
 
-func (r *registry) NewUserRepository() *ir.UserRepository {
+func (r *registry) NewUserMongoRepository() *ir.UserRepository {
 	return ir.NewUserRepository(r.db, r.cfg.MongoCollection)
 }
 
@@ -38,5 +38,9 @@ func (r *registry) NewUserPresenter() *ip.UserPresenter {
 }
 
 func (r *registry) NewAuth() *au.Auth {
-	return au.NewAuth(r.NewUserRepository(), r.cfg)
+	return au.NewAuth(r.NewUserMongoRepository(), r.cfg)
+}
+
+func (r *registry) NewCache() *au.Cache {
+	return au.NewCache(r.NewRedisRepository())
 }

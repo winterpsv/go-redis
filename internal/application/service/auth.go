@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strings"
@@ -44,12 +43,12 @@ func (au *Auth) comparePasswordHash(nickname, password string) bool {
 
 func (au *Auth) GenerateToken(nickname, password string) (string, error) {
 	if !au.comparePasswordHash(nickname, password) {
-		return "", apperror.NewAppError(http.StatusUnauthorized, "Unauthorized", fmt.Errorf("invalid username or password"))
+		return "", apperror.ErrAccess
 	}
 
 	user, err := au.UserRepository.FindByNickname(nickname)
 	if err != nil {
-		return "", apperror.NewAppError(http.StatusInternalServerError, "Failed to find user", err)
+		return "", apperror.ErrFindUser
 	}
 
 	// Generate JWT token
@@ -63,7 +62,7 @@ func (au *Auth) GenerateToken(nickname, password string) (string, error) {
 	jwtSecret := []byte(au.cfg.JwtSecret)
 	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
-		return "", apperror.NewAppError(http.StatusInternalServerError, "Failed to create token", err)
+		return "", apperror.ErrCreateToken
 	}
 
 	return tokenString, nil
@@ -72,12 +71,12 @@ func (au *Auth) GenerateToken(nickname, password string) (string, error) {
 func (au *Auth) parseHeader(req *http.Request) (string, error) {
 	authHeader := req.Header.Get("Authorization")
 	if authHeader == "" {
-		return "", apperror.NewAppError(http.StatusUnauthorized, "Failed authorization token", fmt.Errorf("authorization header is missing"))
+		return "", apperror.ErrAuthorizationToken
 	}
 
 	auth := strings.SplitN(authHeader, " ", 2)
 	if len(auth) != 2 || auth[0] != "Bearer" {
-		return "", apperror.NewAppError(http.StatusUnauthorized, "Failed authorization token", fmt.Errorf("invalid Authorization header format"))
+		return "", apperror.ErrAuthorizationToken
 	}
 
 	return auth[1], nil
@@ -86,14 +85,14 @@ func (au *Auth) parseHeader(req *http.Request) (string, error) {
 func (au *Auth) Authenticate(req *http.Request) (*jwt.Token, error) {
 	tokenString, err := au.parseHeader(req)
 	if err != nil {
-		return nil, err
+		return nil, apperror.ErrParseHeader
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(au.cfg.JwtSecret), nil
 	})
 	if err != nil {
-		return nil, apperror.NewAppError(http.StatusInternalServerError, "Failed to parse token", err)
+		return nil, apperror.ErrParseToken
 	}
 
 	return token, nil
@@ -105,7 +104,7 @@ func (au *Auth) IsAdmin(token *jwt.Token) error {
 	// Get user role
 	role := claims["role"].(string)
 	if role != "admin" {
-		return apperror.NewAppError(http.StatusForbidden, "Permission Denied", fmt.Errorf("only role admin"))
+		return apperror.ErrPermission
 	}
 
 	return nil

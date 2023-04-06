@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"log"
 	"task3_4/user-management/internal/controller/http/handler"
 	"task3_4/user-management/internal/infrastructure/config"

@@ -1,7 +1,6 @@
 package interactor
 
 import (
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	repository "task3_4/user-management/internal/adapter/db/mongodb"
@@ -40,12 +39,12 @@ func (au *AuthInteractor) Create(userForm *dto.CreateUserDTO) (*dto.UserDTO, err
 
 	existingUser, err := au.UserRepository.FindByNickname(userForm.Nickname)
 	if existingUser != nil && existingUser.Nickname != "" {
-		return nil, apperror.NewAppError(http.StatusConflict, fmt.Sprintf("User with nickname %s already exists and his ID %s", uModel.Nickname, existingUser.ID.Hex()), err)
+		return nil, apperror.ErrExistsUser
 	}
 
 	u, err := au.UserRepository.Create(uModel)
 	if err != nil {
-		return nil, apperror.NewAppError(http.StatusInternalServerError, "Failed to create user", err)
+		return nil, apperror.ErrCreateUser
 	}
 
 	return au.UserPresenter.ResponseUser(u), nil
@@ -54,11 +53,11 @@ func (au *AuthInteractor) Create(userForm *dto.CreateUserDTO) (*dto.UserDTO, err
 func (au *AuthInteractor) UpdatePassword(userForm *dto.UpdateUserPasswordDTO, ID string) (*dto.UserDTO, error) {
 	u, err := au.UserRepository.FindByID(ID)
 	if err != nil {
-		return nil, apperror.NewAppError(http.StatusInternalServerError, "Failed to find user", err)
+		return nil, apperror.ErrFindUser
 	}
 
-	if u.Active == false {
-		return nil, apperror.NewAppError(http.StatusNoContent, fmt.Sprintf("user %s is deleted", u.Nickname), err)
+	if !u.Active {
+		return nil, apperror.ErrEditDeletedUser
 	}
 
 	u.PasswordHash = au.Auth.GenerateHash(userForm.Password)
@@ -66,7 +65,7 @@ func (au *AuthInteractor) UpdatePassword(userForm *dto.UpdateUserPasswordDTO, ID
 
 	u, err = au.UserRepository.Update(u)
 	if err != nil {
-		return nil, apperror.NewAppError(http.StatusInternalServerError, "Failed to update user", err)
+		return nil, apperror.ErrUpdateUser
 	}
 
 	return au.UserPresenter.ResponseUser(u), nil

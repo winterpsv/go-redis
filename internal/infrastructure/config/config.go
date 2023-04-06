@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/caarlos0/env/v7"
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -20,9 +19,6 @@ func ReadConfig() (config *Config, err error) {
 	config = &Config{}
 
 	opts := env.Options{RequiredIfNoDef: true}
-	if err := godotenv.Load(); err != nil {
-		return nil, err
-	}
 
 	if err := env.Parse(config, opts); err != nil {
 		return nil, err

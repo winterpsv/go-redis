@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/goccy/go-json"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -36,9 +37,10 @@ func TestUserInteractor_GetAll(t *testing.T) {
 		mockUserRepository = new(repository.MockUserRepository)
 		mockUserPresenter  = new(presenter.MockUserPresenter)
 		mockAuth           = new(service.MockAuth)
+		mockCache          = new(service.MockCache)
 
-		// Создание объекта interactor с mock mockUserRepository, mockUserPresenter, mockAuth
-		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth)
+		// Создание объекта interactor с mock mockUserRepository, mockUserPresenter, mockAuth, mockCache
+		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth, mockCache)
 	)
 	expectedUsers := []*model.User{
 		&model.User{
@@ -94,11 +96,14 @@ func TestUserInteractor_GetAll(t *testing.T) {
 		},
 	}
 
+	data, _ := json.Marshal(dtodUsers)
+
 	mockUserRepository.On("FindAll", int64(1), int64(10), []*model.User(nil)).Return(expectedUsers, nil)
 	mockUserPresenter.On("ResponseUsers", expectedUsers).Return(dtodUsers)
+	mockCache.On("AddToCache", "key", data, 1*time.Minute).Return(nil)
 
 	// Act
-	users, err := interactor.GetAll(1, 10)
+	users, err := interactor.GetAll(1, 10, "key")
 
 	// Assert
 	assert.Nil(t, err)
@@ -106,6 +111,7 @@ func TestUserInteractor_GetAll(t *testing.T) {
 
 	mockUserRepository.AssertExpectations(t)
 	mockUserPresenter.AssertExpectations(t)
+	mockCache.AssertExpectations(t)
 }
 
 func TestUserInteractor_Get(t *testing.T) {
@@ -114,9 +120,10 @@ func TestUserInteractor_Get(t *testing.T) {
 		mockUserRepository = new(repository.MockUserRepository)
 		mockUserPresenter  = new(presenter.MockUserPresenter)
 		mockAuth           = new(service.MockAuth)
+		mockCache          = new(service.MockCache)
 
 		// Создание объекта interactor с mock mockUserRepository, mockUserPresenter, mockAuth
-		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth)
+		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth, mockCache)
 	)
 	mockUser := &model.User{
 		ID:           getObjectIDFromString("abc123"),
@@ -145,10 +152,10 @@ func TestUserInteractor_Get(t *testing.T) {
 	}
 
 	mockUserPresenter.On("ResponseUser", mockUser).Return(dtoUser)
-
 	mockUserRepository.On("FindByID", "abc123").Return(mockUser, nil)
+	mockCache.On("AddToCache", "key", []byte("qwe"), 1*time.Minute).Return(nil)
 
-	user, err := interactor.Get("abc123")
+	user, err := interactor.Get("abc123", "key")
 	assert.NoError(t, err)
 	assert.Equal(t, getObjectIDFromString("abc123"), user.ID)
 	assert.Equal(t, "user1", user.FirstName)
@@ -156,6 +163,8 @@ func TestUserInteractor_Get(t *testing.T) {
 	assert.Equal(t, GenerateHash("Password1"), user.PasswordHash)
 
 	mockUserRepository.AssertExpectations(t)
+	mockUserPresenter.AssertExpectations(t)
+	mockCache.AssertExpectations(t)
 }
 
 func TestUserInteractor_Get_Error(t *testing.T) {
@@ -164,9 +173,10 @@ func TestUserInteractor_Get_Error(t *testing.T) {
 		mockUserRepository = new(repository.MockUserRepository)
 		mockUserPresenter  = new(presenter.MockUserPresenter)
 		mockAuth           = new(service.MockAuth)
+		mockCache          = new(service.MockCache)
 
 		// Создание объекта interactor с mock mockUserRepository, mockUserPresenter, mockAuth
-		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth)
+		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth, mockCache)
 	)
 	mockUser := &model.User{
 		ID:           getObjectIDFromString("abc123"),
@@ -181,8 +191,9 @@ func TestUserInteractor_Get_Error(t *testing.T) {
 	}
 
 	mockUserRepository.On("FindByID", "abc123").Return(mockUser, fmt.Errorf("could not found user with ID abc123"))
+	mockCache.On("AddToCache", "key", []byte("qwe"), 1*time.Minute).Return(nil)
 
-	_, err := interactor.Get("abc123")
+	_, err := interactor.Get("abc123", "key")
 	assert.NotNil(t, err)
 	assert.Equal(t, fmt.Errorf("could not found user with ID abc123"), err)
 	mockUserRepository.AssertExpectations(t)
@@ -264,9 +275,10 @@ func TestUserInteractor_Update(t *testing.T) {
 		mockUserRepository = new(repository.MockUserRepository)
 		mockUserPresenter  = new(presenter.MockUserPresenter)
 		mockAuth           = new(service.MockAuth)
+		mockCache          = new(service.MockCache)
 
 		// Создание объекта interactor с mock mockUserRepository, mockUserPresenter, mockAuth
-		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth)
+		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth, mockCache)
 	)
 	mockUser := &dto.UpdateUserDTO{
 		FirstName: "testuser",
@@ -400,9 +412,10 @@ func TestUserInteractor_Deactivate(t *testing.T) {
 		mockUserRepository = new(repository.MockUserRepository)
 		mockUserPresenter  = new(presenter.MockUserPresenter)
 		mockAuth           = new(service.MockAuth)
+		mockCache          = new(service.MockCache)
 
 		// Создание объекта interactor с mock mockUserRepository, mockUserPresenter, mockAuth
-		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth)
+		interactor = NewUserInteractor(mockUserRepository, mockUserPresenter, mockAuth, mockCache)
 	)
 	ID := getObjectIDFromString("user123")
 	PasswordHash := GenerateHash("newPassword")

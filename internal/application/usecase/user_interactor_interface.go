@@ -6,10 +6,11 @@ import (
 )
 
 type UserInteractorInterface interface {
-	GetAll(page, pageSize int64) ([]*dto.UserDTO, error)
-	Get(id string) (*dto.UserDTO, error)
+	GetAll(page, pageSize int64, key string) ([]*dto.UserDTO, error)
+	Get(id, key string) (*dto.UserDTO, error)
 	UpdateVote(userForm *dto.VoteUserDTO, ID string, token *jwt.Token) (*dto.UserDTO, error)
 	Update(userForm *dto.UpdateUserDTO, ID string) (*dto.UserDTO, error)
 	Deactivate(ID string) (*dto.UserDTO, error)
-	GetUserByToken(token *jwt.Token) (*dto.UserDTO, error)
+	GetUserByToken(token *jwt.Token, key string) (*dto.UserDTO, error)
+	CacheGet(key string) ([]byte, error)
 }
